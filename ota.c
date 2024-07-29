@@ -167,10 +167,13 @@ void extractFile(char * File, char * Name, uint32_t Size, short Perms, char * Ex
     // Ok. Extract . This is simple - just dump the file contents to its directory.
     // What we need to do here is parse the '/' and mkdir(2), etc.
 
-    char * dirSep = strchr(Name, '/');
+    char * dirSep = strchr(outName, '/');
     while (dirSep) {
-        * dirSep = '\0';
+    	 * dirSep = '\0';
+        
         mkdir(outName, 0755);
+        //fprintf(stderr, "Creating dir: %s\n", outName);
+     
         * dirSep = '/';
         dirSep += 1;
         dirSep = strchr(dirSep, '/');
@@ -181,16 +184,16 @@ void extractFile(char * File, char * Name, uint32_t Size, short Perms, char * Ex
         /* http://newosxbook.com/forum/viewtopic.php?f=3&t=19513 */
         char * target = strndup(File, Size);
         if (g_verbose) {
-            fprintf(stderr, "Symlinking %s to %s\n", Name, target);
+            fprintf(stderr, "Symlinking %s to %s\n", outName, target);
         }
         symlink(target, Name);
-        fchmodat(AT_FDCWD, Name, Perms, AT_SYMLINK_NOFOLLOW);
+        fchmodat(AT_FDCWD, outName, Perms, AT_SYMLINK_NOFOLLOW);
         free(target);
     } else {
         // at this point we're out of '/'s
         // go back to the last /, if any
         if (g_verbose) {
-            fprintf(stderr, "Dumping %d bytes to %s\n", Size, Name);
+            fprintf(stderr, "Dumping %d bytes to %s\n", Size, outName);
         }
 
         int fd = open(outName, O_WRONLY | O_CREAT);
